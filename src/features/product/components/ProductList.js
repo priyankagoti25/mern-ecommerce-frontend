@@ -1,5 +1,6 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import {Dialog, Disclosure, Menu, Transition} from '@headlessui/react'
+import {ITEMS_PER_PAGE} from "../../../app/constant";
 import {XMarkIcon} from '@heroicons/react/24/outline'
 import {
     ChevronDownIcon,
@@ -13,8 +14,14 @@ import {
 } from '@heroicons/react/20/solid'
 import {Link} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {fetchAllProductAsync, fetchAllProductByFiltersAsync, fetchAllProductBySortAsync, selectAllProducts} from "../productSlice";
-
+import {
+    fetchAllBrandsAsync, fetchAllCategoriesAsync,
+    fetchAllProductAsync,
+    fetchAllProductByFiltersAsync,
+    fetchAllProductBySortAsync, selectAllBrands, selectAllCategories,
+    selectAllProducts,
+    selectPagination
+} from "../productSlice";
 const oldProducts = [
     {
         id: 1,
@@ -59,235 +66,38 @@ const sortOptions = [
     { name: 'Price: Low to High', sort: 'price', order:'asc', current: false },
     { name: 'Price: High to Low', sort: 'price', order:'desc', current: false },
 ]
-// const subCategories = [
-//     { name: 'Totes', href: '#' },
-//     { name: 'Backpacks', href: '#' },
-//     { name: 'Travel Bags', href: '#' },
-//     { name: 'Hip Bags', href: '#' },
-//     { name: 'Laptop Sleeves', href: '#' },
-// ]
-const filters = [
-    {
-        id: 'category',
-        name: 'Category',
-        options: [
-            { value: 'smartphones', label: 'Smartphones', checked: false },
-            { value: 'laptops', label: 'Laptops', checked: false },
-            { value: 'fragrances', label: 'Fragrances', checked: false },
-            { value: 'skincare', label: 'Skincare', checked: false },
-            { value: 'groceries', label: 'Groceries', checked: false },
-            {
-                value: 'home-decoration',
-                label: 'Home decoration',
-                checked: false
-            },
-            { value: 'furniture', label: 'Furniture', checked: false },
-            { value: 'tops', label: 'Tops', checked: false },
-            { value: 'womens-dresses', label: 'Womens dresses', checked: false },
-            { value: 'womens-shoes', label: 'Womens shoes', checked: false },
-            { value: 'mens-shirts', label: 'Mens shirts', checked: false },
-            { value: 'mens-shoes', label: 'Mens shoes', checked: false },
-            { value: 'mens-watches', label: 'Mens watches', checked: false },
-            { value: 'womens-watches', label: 'Womens watches', checked: false },
-            { value: 'womens-bags', label: 'Womens bags', checked: false },
-            {
-                value: 'womens-jewellery',
-                label: 'Womens jewellery',
-                checked: false
-            },
-            { value: 'sunglasses', label: 'Sunglasses', checked: false },
-            { value: 'automotive', label: 'Automotive', checked: false },
-            { value: 'motorcycle', label: 'Motorcycle', checked: false },
-            { value: 'lighting', label: 'Lighting', checked: false }
-        ]
-
-        ,
-    },
-    {
-        id: 'brand',
-        name: 'Brand',
-        options:  [
-            { value: 'Apple', label: 'Apple', checked: false },
-            { value: 'Samsung', label: 'Samsung', checked: false },
-            { value: 'OPPO', label: 'Oppo', checked: false },
-            { value: 'Huawei', label: 'Huawei', checked: false },
-            {
-                value: 'Microsoft Surface',
-                label: 'Microsoft Surface',
-                checked: false
-            },
-            { value: 'Infinix', label: 'Infinix', checked: false },
-            { value: 'HP Pavilion', label: 'Hp Pavilion', checked: false },
-            {
-                value: 'Impression of Acqua Di Gio',
-                label: 'Impression Of Acqua Di Gio',
-                checked: false
-            },
-            { value: 'Royal_Mirage', label: 'Royal_mirage', checked: false },
-            {
-                value: 'Fog Scent Xpressio',
-                label: 'Fog Scent Xpressio',
-                checked: false
-            },
-            { value: 'Al Munakh', label: 'Al Munakh', checked: false },
-            {
-                value: 'Lord - Al-Rehab',
-                label: 'Lord - Al-rehab',
-                checked: false
-            },
-            { value: "L'Oreal Paris", label: "L'oreal Paris", checked: false },
-            { value: 'Hemani Tea', label: 'Hemani Tea', checked: false },
-            { value: 'Dermive', label: 'Dermive', checked: false },
-            {
-                value: 'ROREC White Rice',
-                label: 'Rorec White Rice',
-                checked: false
-            },
-            { value: 'Fair & Clear', label: 'Fair & Clear', checked: false },
-            { value: 'Saaf & Khaas', label: 'Saaf & Khaas', checked: false },
-            {
-                value: 'Bake Parlor Big',
-                label: 'Bake Parlor Big',
-                checked: false
-            },
-            {
-                value: 'Baking Food Items',
-                label: 'Baking Food Items',
-                checked: false
-            },
-            { value: 'fauji', label: 'Fauji', checked: false },
-            { value: 'Dry Rose', label: 'Dry Rose', checked: false },
-            { value: 'Boho Decor', label: 'Boho Decor', checked: false },
-            { value: 'Flying Wooden', label: 'Flying Wooden', checked: false },
-            { value: 'LED Lights', label: 'Led Lights', checked: false },
-            { value: 'luxury palace', label: 'Luxury Palace', checked: false },
-            { value: 'Golden', label: 'Golden', checked: false },
-            {
-                value: 'Furniture Bed Set',
-                label: 'Furniture Bed Set',
-                checked: false
-            },
-            {
-                value: 'Ratttan Outdoor',
-                label: 'Ratttan Outdoor',
-                checked: false
-            },
-            { value: 'Kitchen Shelf', label: 'Kitchen Shelf', checked: false },
-            { value: 'Multi Purpose', label: 'Multi Purpose', checked: false },
-            { value: 'AmnaMart', label: 'Amnamart', checked: false },
-            {
-                value: 'Professional Wear',
-                label: 'Professional Wear',
-                checked: false
-            },
-            { value: 'Soft Cotton', label: 'Soft Cotton', checked: false },
-            { value: 'Top Sweater', label: 'Top Sweater', checked: false },
-            {
-                value: 'RED MICKY MOUSE..',
-                label: 'Red Micky Mouse..',
-                checked: false
-            },
-            {
-                value: 'Digital Printed',
-                label: 'Digital Printed',
-                checked: false
-            },
-            { value: 'Ghazi Fabric', label: 'Ghazi Fabric', checked: false },
-            { value: 'IELGY', label: 'Ielgy', checked: false },
-            { value: 'IELGY fashion', label: 'Ielgy Fashion', checked: false },
-            {
-                value: 'Synthetic Leather',
-                label: 'Synthetic Leather',
-                checked: false
-            },
-            {
-                value: 'Sandals Flip Flops',
-                label: 'Sandals Flip Flops',
-                checked: false
-            },
-            { value: 'Maasai Sandals', label: 'Maasai Sandals', checked: false },
-            {
-                value: 'Arrivals Genuine',
-                label: 'Arrivals Genuine',
-                checked: false
-            },
-            {
-                value: 'Vintage Apparel',
-                label: 'Vintage Apparel',
-                checked: false
-            },
-            { value: 'FREE FIRE', label: 'Free Fire', checked: false },
-            { value: 'The Warehouse', label: 'The Warehouse', checked: false },
-            { value: 'Sneakers', label: 'Sneakers', checked: false },
-            { value: 'Rubber', label: 'Rubber', checked: false },
-            { value: 'Naviforce', label: 'Naviforce', checked: false },
-            { value: 'SKMEI 9117', label: 'Skmei 9117', checked: false },
-            { value: 'Strap Skeleton', label: 'Strap Skeleton', checked: false },
-            { value: 'Stainless', label: 'Stainless', checked: false },
-            {
-                value: 'Eastern Watches',
-                label: 'Eastern Watches',
-                checked: false
-            },
-            { value: 'Luxury Digital', label: 'Luxury Digital', checked: false },
-            { value: 'Watch Pearls', label: 'Watch Pearls', checked: false },
-            { value: 'Bracelet', label: 'Bracelet', checked: false },
-            { value: 'LouisWill', label: 'Louiswill', checked: false },
-            {
-                value: 'Copenhagen Luxe',
-                label: 'Copenhagen Luxe',
-                checked: false
-            },
-            { value: 'Steal Frame', label: 'Steal Frame', checked: false },
-            { value: 'Darojay', label: 'Darojay', checked: false },
-            {
-                value: 'Fashion Jewellery',
-                label: 'Fashion Jewellery',
-                checked: false
-            },
-            { value: 'Cuff Butterfly', label: 'Cuff Butterfly', checked: false },
-            {
-                value: 'Designer Sun Glasses',
-                label: 'Designer Sun Glasses',
-                checked: false
-            },
-            { value: 'mastar watch', label: 'Mastar Watch', checked: false },
-            { value: 'Car Aux', label: 'Car Aux', checked: false },
-            { value: 'W1209 DC12V', label: 'W1209 Dc12v', checked: false },
-            { value: 'TC Reusable', label: 'Tc Reusable', checked: false },
-            { value: 'Neon LED Light', label: 'Neon Led Light', checked: false },
-            {
-                value: 'METRO 70cc Motorcycle - MR70',
-                label: 'Metro 70cc Motorcycle - Mr70',
-                checked: false
-            },
-            { value: 'BRAVE BULL', label: 'Brave Bull', checked: false },
-            { value: 'shock absorber', label: 'Shock Absorber', checked: false },
-            { value: 'JIEPOLLY', label: 'Jiepolly', checked: false },
-            { value: 'Xiangle', label: 'Xiangle', checked: false },
-            {
-                value: 'lightingbrilliance',
-                label: 'Lightingbrilliance',
-                checked: false
-            },
-            { value: 'Ifei Home', label: 'Ifei Home', checked: false },
-            { value: 'DADAWU', label: 'Dadawu', checked: false },
-            { value: 'YIOSI', label: 'Yiosi', checked: false }
-        ]
-    },
-]
-
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
 export default function ProductList() {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
     const dispatch = useDispatch()
     const products = useSelector(selectAllProducts)
+    const pagination = useSelector(selectPagination)
+    const brands = useSelector(selectAllBrands)
+    const categories = useSelector(selectAllCategories)
+    const filters = [
+        {
+            id: 'category',
+            name: 'Category',
+            options: brands
+        },
+        {
+            id: 'brand',
+            name: 'Brand',
+            options: categories
+        },
+    ]
     useEffect(() => {
-        dispatch(fetchAllProductAsync())
-    }, [dispatch])
+        const pagination = {_page:currentPage, _per_page:ITEMS_PER_PAGE}
+        dispatch(fetchAllProductAsync(pagination))
+    }, [dispatch,currentPage])
+    useEffect(()=>{
+        dispatch(fetchAllBrandsAsync())
+        dispatch(fetchAllCategoriesAsync())
+    },[])
     function handleFilter(event,section){
         const filterObj = {[section.id]:event.target.value,}
         console.log(event,section,filterObj)
@@ -296,6 +106,11 @@ export default function ProductList() {
 
     function sortProducts(option){
         dispatch(fetchAllProductBySortAsync(option))
+    }
+
+    function handlePage(page){
+        console.log({page})
+        setCurrentPage(page)
     }
     return (
         <div className="bg-white">
@@ -534,7 +349,7 @@ export default function ProductList() {
 
                                     <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                                         {products.map((product) => (
-                                            <Link to="product-detail" key={product.id}>
+                                            <Link to={`product-detail/${product.id}`} key={product.id}>
                                                 <div className="group relative border border-gray-200 p-2 rounded-md">
                                                     <div
                                                         className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-60">
@@ -571,83 +386,75 @@ export default function ProductList() {
                                 </div>
                                 <div className="flex items-center justify-between border-t border-gray-200 bg-white mt-20 px-4 py-3 sm:px-6">
                                     <div className="flex flex-1 justify-between sm:hidden">
-                                             <a
-                                                 href="#"
-                                                 className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                             <div
+                                                 onClick={()=> {
+                                                     if(pagination.prev) {
+                                                         handlePage(pagination.prev)
+                                                     }
+                                                     return false;
+                                                 }}                                                 className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                              >
                                                  Previous
-                                             </a>
-                                             <a
-                                                 href="#"
-                                                 className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                             </div>
+                                             <div
+                                                 onClick={()=> {
+                                                     if(pagination.next) {
+                                                         handlePage(pagination.next)
+                                                     }
+                                                     return false;
+                                                 }}                                                 className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                              >
                                                  Next
-                                             </a>
+                                             </div>
                                          </div>
                                     <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                                              <div>
                                                  <p className="text-sm text-gray-700">
-                                                     Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
-                                                     <span className="font-medium">97</span> results
+                                                     Showing <span className="font-medium">{(currentPage-1)*ITEMS_PER_PAGE+1}</span> to <span className="font-medium">{currentPage*ITEMS_PER_PAGE > pagination.items?pagination.items:currentPage*ITEMS_PER_PAGE}</span> of{' '}
+                                                     <span className="font-medium">{pagination.items}</span> results
                                                  </p>
                                              </div>
                                              <div>
                                                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                                     <a
-                                                         href="#"
+                                                     <div
+                                                         onClick={()=> {
+                                                             if(pagination.prev) {
+                                                                 handlePage(pagination.prev)
+                                                             }
+                                                             return false;
+                                                         }}
                                                          className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
                                                      >
                                                          <span className="sr-only">Previous</span>
                                                          <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                                                     </a>
+                                                     </div>
                                                      {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
-                                                     <a
-                                                         href="#"
-                                                         aria-current="page"
-                                                         className="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                                     >
-                                                         1
-                                                     </a>
-                                                     <a
-                                                         href="#"
-                                                         className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                                                     >
-                                                         2
-                                                     </a>
-                                                     <a
-                                                         href="#"
-                                                         className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-                                                     >
-                                                         3
-                                                     </a>
-                                                     <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
-              ...
-            </span>
-                                                     <a
-                                                         href="#"
-                                                         className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-                                                     >
-                                                         8
-                                                     </a>
-                                                     <a
-                                                         href="#"
-                                                         className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                                                     >
-                                                         9
-                                                     </a>
-                                                     <a
-                                                         href="#"
-                                                         className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                                                     >
-                                                         10
-                                                     </a>
-                                                     <a
-                                                         href="#"
+                                                     {
+                                                         Array.from({length:pagination.pages},(_,index)=>index+1).map((page)=>(
+                                                             <a
+                                                                 href="#"
+                                                                 aria-current="page"
+                                                                 onClick={()=>handlePage(page)}
+                                                                 className={`relative z-10 inline-flex items-center ${page===currentPage?'bg-indigo-600 text-white':'text-gray-900'} px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+                                                             >
+                                                                 {page}
+                                                             </a>
+                                                         ))
+                                                     }
+
+
+                                                     <div
+                                                         onClick={()=> {
+                                                             if(pagination.next) {
+                                                                 handlePage(pagination.next)
+                                                             }
+                                                             return false;
+                                                         }}
                                                          className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
                                                      >
                                                          <span className="sr-only">Next</span>
                                                          <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                                                     </a>
+                                                     </div>
                                                  </nav>
                                              </div>
                                          </div>
