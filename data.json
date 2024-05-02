@@ -1843,7 +1843,7 @@
       ]
     }
   ],
-  "categories" :[
+  "categories": [
     {
       "value": "smartphones",
       "label": "Smartphones",
@@ -2335,6 +2335,18 @@
       "value": "YIOSI",
       "label": "Yiosi",
       "checked": false
+    }
+  ],
+  "users": [
+    {
+      "id": "06e8",
+      "email": "priyanka.bvminfotech@gmail.com",
+      "password": "12345678"
+    },
+    {
+      "id": "06e28",
+      "email": "priyank123a.bvminfotech@gmail.com",
+      "password": "12345678"
     }
   ]
 }

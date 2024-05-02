@@ -10,11 +10,11 @@ import CartView from "./pages/CartView";
 import Checkout from "./pages/Checkout";
 import ProductDetailView from "./pages/ProductDetailView";
 import './App.css';
-
+import Protected from "./features/auth/components/Protected";
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Home />,
+        element: <Protected><Home /></Protected>,
         // loader: rootLoader,
         // children: [
         //     {
@@ -34,15 +34,15 @@ const router = createBrowserRouter([
     },
     {
         path: "/cart",
-        element: <CartView />,
+        element: <Protected><CartView /></Protected>,
     },
     {
         path: "/checkout",
-        element: <Checkout />,
+        element: <Protected><Checkout /></Protected>,
     },
     {
         path: "/product-detail/:id",
-        element: <ProductDetailView />,
+        element: <Protected><ProductDetailView /></Protected>,
     },
 ]);
 function App() {

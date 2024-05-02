@@ -1,10 +1,26 @@
 import React from 'react';
 import {Link} from 'react-router-dom'
+import {useForm} from "react-hook-form";
+import {yupResolver} from "@hookform/resolvers/yup"
+import * as Yup from 'yup'
+import {selectedLoggedInUser, createUserAsync, loginError} from "../authSlice";
+import {useDispatch, useSelector} from "react-redux";
 
+const registerSchema = Yup.object({
+    email:Yup.string().required("Email is required").email("Enter valid email address"),
+    password: Yup.string().required("Password is required"),
+    confirm_password: Yup.string().required("Password confirmation is required").oneOf([Yup.ref('password'), null], 'Passwords must match')
+}).required()
 function Signup(props) {
+    const {register, handleSubmit, watch, formState: {errors}} = useForm({resolver:yupResolver(registerSchema)})
+    console.log('errors--->', errors)
+    const dispatch = useDispatch()
+    const user = useSelector(selectedLoggedInUser)
+
     return (
         <>
             <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+                {user?.email}
                 <div className="sm:mx-auto sm:w-full sm:max-w-sm">
                     <img
                         className="mx-auto h-10 w-auto"
@@ -17,7 +33,10 @@ function Signup(props) {
                 </div>
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                    <form className="space-y-6" action="#" method="POST">
+                    <form noValidate className="space-y-6"  onSubmit={handleSubmit((data)=>{
+                        console.log('data--->', data)
+                        dispatch(createUserAsync({email:data.email, password: data.password}))
+                    })}>
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                                 Email address
@@ -25,12 +44,10 @@ function Signup(props) {
                             <div className="mt-2">
                                 <input
                                     id="email"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
+                                    {...register('email')}
                                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                 />
+                                <p className="text-red-600">{errors.email?.message}</p>
                             </div>
                         </div>
 
@@ -43,12 +60,11 @@ function Signup(props) {
                             <div className="mt-2">
                                 <input
                                     id="password"
-                                    name="password"
+                                    {...register('password')}
                                     type="password"
-                                    autoComplete="current-password"
-                                    required
                                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                 />
+                                <p className="text-red-600">{errors.password?.message}</p>
                             </div>
                         </div>
                         <div>
@@ -60,11 +76,11 @@ function Signup(props) {
                             <div className="mt-2">
                                 <input
                                     id="confirm-password"
-                                    name="confirm_password"
+                                    {...register('confirm_password')}
                                     type="password"
-                                    required
                                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                 />
+                                <p className="text-red-600">{errors.confirm_password?.message}</p>
                             </div>
                         </div>
 
