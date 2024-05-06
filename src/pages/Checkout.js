@@ -1,5 +1,10 @@
 import React from 'react';
 import {Link} from "react-router-dom";
+import {deleteCartItemAsync, selectCartItems, updateCartItemAsync} from "../features/cart/cartSlice";
+import {useDispatch, useSelector} from "react-redux";
+import {useForm} from "react-hook-form";
+import {yupResolver} from "@hookform/resolvers/yup";
+import {checkUserAsync} from "../features/auth/authSlice";
 const products = [
     {
         id: 1,
@@ -61,42 +66,39 @@ const addresses = [
 ]
 
 function Checkout(props) {
+    const dispatch = useDispatch()
+    const cartItems = useSelector(selectCartItems)
+    const totalAmount = cartItems.reduce((amount, item)=>item.price*item.quantity+amount,0)
+    const totalItems = cartItems.reduce((total,item)=>item.quantity+total,0)
+    const {register, reset, handleSubmit, watch, formState: {errors}} = useForm()
+
+    function handleQuantity(e,product){
+        console.log('quantity',e.target.value)
+        dispatch(updateCartItemAsync({...product,quantity:parseInt(e.target.value)}))
+    }
     return (
         <div className="flex mx-auto max-w-2xl lg:max-w-7xl h-full flex-col my-5 p-10">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10">
                 <div className="lg:col-span-3">
                     <div className="bg-white shadow-xl p-5">
-                        <form>
+                        <form noValidate onSubmit={handleSubmit((data)=>{
+                            console.log('address-data',data)
+                            // dispatch(checkUserAsync(data))
+                        })}>
                             <div className="border-b border-gray-900/10 pb-12">
                                 <h2 className="text-base font-semibold leading-7 text-gray-900">Personal Information</h2>
                                 <p className="mt-1 text-sm leading-6 text-gray-600">Use a permanent address where you can receive mail.</p>
 
                                 <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                                     <div className="sm:col-span-3">
-                                        <label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">
-                                            First name
+                                        <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
+                                            Full name
                                         </label>
                                         <div className="mt-2">
                                             <input
                                                 type="text"
-                                                name="first-name"
-                                                id="first-name"
-                                                autoComplete="given-name"
-                                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="sm:col-span-3">
-                                        <label htmlFor="last-name" className="block text-sm font-medium leading-6 text-gray-900">
-                                            Last name
-                                        </label>
-                                        <div className="mt-2">
-                                            <input
-                                                type="text"
-                                                name="last-name"
-                                                id="last-name"
-                                                autoComplete="family-name"
+                                                {...register('name', {required:'Name is required'})}
+                                                id="name"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
@@ -109,9 +111,21 @@ function Checkout(props) {
                                         <div className="mt-2">
                                             <input
                                                 id="email"
-                                                name="email"
+                                                {...register('email', {required:'email is required'})}
                                                 type="email"
-                                                autoComplete="email"
+                                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="sm:col-span-4">
+                                        <label htmlFor="phone" className="block text-sm font-medium leading-6 text-gray-900">
+                                            Phone number
+                                        </label>
+                                        <div className="mt-2">
+                                            <input
+                                                id="phone"
+                                                {...register('phone', {required:'Phone number is required'})}
+                                                type="number"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
@@ -124,10 +138,10 @@ function Checkout(props) {
                                         <div className="mt-2">
                                             <select
                                                 id="country"
-                                                name="country"
-                                                autoComplete="country-name"
+                                                {...register('country', {required:'country is required'})}
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                                             >
+                                                <option>India</option>
                                                 <option>United States</option>
                                                 <option>Canada</option>
                                                 <option>Mexico</option>
@@ -136,15 +150,14 @@ function Checkout(props) {
                                     </div>
 
                                     <div className="col-span-full">
-                                        <label htmlFor="street-address" className="block text-sm font-medium leading-6 text-gray-900">
+                                        <label htmlFor="street" className="block text-sm font-medium leading-6 text-gray-900">
                                             Street address
                                         </label>
                                         <div className="mt-2">
                                             <input
                                                 type="text"
-                                                name="street-address"
-                                                id="street-address"
-                                                autoComplete="street-address"
+                                                {...register('street', {required:'Street address is required'})}
+                                                id="street"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
@@ -157,39 +170,36 @@ function Checkout(props) {
                                         <div className="mt-2">
                                             <input
                                                 type="text"
-                                                name="city"
+                                                {...register('city', {required:'City is required'})}
                                                 id="city"
-                                                autoComplete="address-level2"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label htmlFor="region" className="block text-sm font-medium leading-6 text-gray-900">
+                                        <label htmlFor="state" className="block text-sm font-medium leading-6 text-gray-900">
                                             State / Province
                                         </label>
                                         <div className="mt-2">
                                             <input
                                                 type="text"
-                                                name="region"
-                                                id="region"
-                                                autoComplete="address-level1"
+                                                {...register('state', {required:'State is required'})}
+                                                id="state"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label htmlFor="postal-code" className="block text-sm font-medium leading-6 text-gray-900">
+                                        <label htmlFor="pinCode" className="block text-sm font-medium leading-6 text-gray-900">
                                             ZIP / Postal code
                                         </label>
                                         <div className="mt-2">
                                             <input
                                                 type="text"
-                                                name="postal-code"
-                                                id="postal-code"
-                                                autoComplete="postal-code"
+                                                {...register('pinCode', {required:'Pin code is required'})}
+                                                id="pinCode"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
                                         </div>
@@ -197,7 +207,7 @@ function Checkout(props) {
                                 </div>
                             </div>
                             <div className="mt-6 flex items-center justify-end gap-x-6">
-                                <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
+                                <button onClick={()=>reset()} type="button" className="text-sm font-semibold leading-6 text-gray-900">
                                     Reset
                                 </button>
                                 <button
@@ -283,7 +293,7 @@ function Checkout(props) {
 
                 <div className="lg:col-span-2">
                     <div className="bg-white shadow-xl">
-                        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-3">
+                        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
                             <div className="flex items-start justify-between">
                                 <h2 className="text-xl font-semibold">Cart</h2>
 
@@ -292,12 +302,12 @@ function Checkout(props) {
                             <div className="mt-8">
                                 <div className="flow-root">
                                     <ul role="list" className="-my-6 divide-y divide-gray-200">
-                                        {products.map((product) => (
+                                        {cartItems?.map((product) => (
                                             <li key={product.id} className="flex py-6">
                                                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                                     <img
-                                                        src={product.imageSrc}
-                                                        alt={product.imageAlt}
+                                                        src={product.thumbnail}
+                                                        alt={product.title}
                                                         className="h-full w-full object-cover object-center"
                                                     />
                                                 </div>
@@ -306,17 +316,18 @@ function Checkout(props) {
                                                     <div>
                                                         <div className="flex justify-between text-base font-medium text-gray-900">
                                                             <h3>
-                                                                <a href={product.href}>{product.name}</a>
+                                                                <a href={product.thumbnail}>{product.title}</a>
                                                             </h3>
-                                                            <p className="ml-4">{product.price}</p>
+                                                            <p className="ml-4">${product.price}</p>
                                                         </div>
-                                                        <p className="mt-1 text-sm text-gray-500">{product.color}</p>
+                                                        <p className="mt-1 text-sm text-gray-500">{product.brand}</p>
                                                     </div>
                                                     <div className="flex flex-1 items-end justify-between text-sm">
                                                         <div className="flex gap-2 items-center">
                                                             <p className="text-gray-500">Qty</p>
                                                             <select
                                                                 value={product.quantity}
+                                                                onChange={(e)=>handleQuantity(e,product)}
                                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                                                             >
                                                                 <option value="1">1</option>
@@ -327,6 +338,7 @@ function Checkout(props) {
 
                                                         <div className="flex">
                                                             <button
+                                                                onClick={()=>dispatch(deleteCartItemAsync(product.id))}
                                                                 type="button"
                                                                 className="font-medium text-indigo-600 hover:text-indigo-500"
                                                             >
@@ -341,11 +353,14 @@ function Checkout(props) {
                                 </div>
                             </div>
                         </div>
-
                         <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                             <div className="flex justify-between text-base font-medium text-gray-900">
+                                <p>Total items in cart</p>
+                                <p>${totalItems}</p>
+                            </div>
+                            <div className="flex justify-between text-base font-medium text-gray-900">
                                 <p>Subtotal</p>
-                                <p>$262.00</p>
+                                <p>${totalAmount}</p>
                             </div>
                             <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                             <div className="mt-6">

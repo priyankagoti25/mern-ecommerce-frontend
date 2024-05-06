@@ -432,6 +432,7 @@ export default function ProductList() {
                                                      {
                                                          Array.from({length:pagination.pages},(_,index)=>index+1).map((page)=>(
                                                              <a
+                                                                 key={page}
                                                                  href="#"
                                                                  aria-current="page"
                                                                  onClick={()=>handlePage(page)}

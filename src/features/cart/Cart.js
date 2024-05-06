@@ -1,6 +1,8 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import {Link} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {deleteCartItemAsync, selectCartItems, updateCartItemAsync} from "./cartSlice";
 
 const products = [
     {
@@ -39,6 +41,14 @@ const products = [
 ]
 
 function Cart(props) {
+    const dispatch = useDispatch()
+    const cartItems = useSelector(selectCartItems)
+    const totalAmount = cartItems.reduce((amount, item)=>item.price*item.quantity+amount,0)
+    const totalItems = cartItems.reduce((total,item)=>item.quantity+total,0)
+    function handleQuantity(e,product){
+        console.log('quantity',e.target.value)
+        dispatch(updateCartItemAsync({...product,quantity:parseInt(e.target.value)}))
+    }
     return (
         <div className="flex mx-auto max-w-2xl lg:max-w-7xl h-full flex-col bg-white shadow-xl my-10">
             <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
@@ -50,12 +60,12 @@ function Cart(props) {
                 <div className="mt-8">
                     <div className="flow-root">
                         <ul role="list" className="-my-6 divide-y divide-gray-200">
-                            {products.map((product) => (
+                            {cartItems?.map((product) => (
                                 <li key={product.id} className="flex py-6">
                                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                         <img
-                                            src={product.imageSrc}
-                                            alt={product.imageAlt}
+                                            src={product.thumbnail}
+                                            alt={product.title}
                                             className="h-full w-full object-cover object-center"
                                         />
                                     </div>
@@ -64,17 +74,18 @@ function Cart(props) {
                                         <div>
                                             <div className="flex justify-between text-base font-medium text-gray-900">
                                                 <h3>
-                                                    <a href={product.href}>{product.name}</a>
+                                                    <a href={product.thumbnail}>{product.title}</a>
                                                 </h3>
-                                                <p className="ml-4">{product.price}</p>
+                                                <p className="ml-4">${product.price}</p>
                                             </div>
-                                            <p className="mt-1 text-sm text-gray-500">{product.color}</p>
+                                            <p className="mt-1 text-sm text-gray-500">{product.brand}</p>
                                         </div>
                                         <div className="flex flex-1 items-end justify-between text-sm">
                                             <div className="flex gap-2 items-center">
                                                 <p className="text-gray-500">Qty</p>
                                                 <select
                                                     value={product.quantity}
+                                                    onChange={(e)=>handleQuantity(e,product)}
                                                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                                                 >
                                                     <option value="1">1</option>
@@ -85,6 +96,7 @@ function Cart(props) {
 
                                             <div className="flex">
                                                 <button
+                                                    onClick={()=>dispatch(deleteCartItemAsync(product.id))}
                                                     type="button"
                                                     className="font-medium text-indigo-600 hover:text-indigo-500"
                                                 >
@@ -102,9 +114,12 @@ function Cart(props) {
 
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                 <div className="flex justify-between text-base font-medium text-gray-900">
-                    <p>Subtotal</p>
-                    <p>$262.00</p>
-                </div>
+                    <p>Total Items in cart</p>
+                    <p>{totalItems}</p>
+                </div> <div className="flex justify-between text-base font-medium text-gray-900">
+                <p>Subtotal</p>
+                <p>${totalAmount}</p>
+            </div>
                 <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                 <div className="mt-6">
                     <Link

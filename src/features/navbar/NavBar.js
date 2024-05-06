@@ -2,6 +2,8 @@ import React, { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
 import {Link} from "react-router-dom";
+import {useSelector} from "react-redux";
+import {selectCartItems} from "../cart/cartSlice";
 
 const user = {
     name: 'Tom Cook',
@@ -23,6 +25,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 export default function NavBar({children}) {
+    const cartItems = useSelector(selectCartItems)
     return (
         <>
             <div className="min-h-full">
@@ -72,9 +75,10 @@ export default function NavBar({children}) {
 
                                                     <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
 
-                                                <span className="inline-flex items-center rounded-xl bg-red-50 absolute bottom-5 left-4 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
-                                                    2
-                                                </span>
+                                                { cartItems.length > 0 && <span
+                                                    className="inline-flex items-center rounded-xl bg-red-50 absolute bottom-5 left-4 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                                                    {cartItems.length}
+                                                </span>}
                                             </button>
                                             </Link>
                                             {/* Profile dropdown */}
@@ -163,9 +167,10 @@ export default function NavBar({children}) {
                                             className="relative ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                                         >
                                             <span className="absolute -inset-1.5" />
-                                            <span className="inline-flex items-center rounded-xl bg-red-50 absolute bottom-5 left-4 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
-                                                    2
-                                                </span>
+                                            { cartItems.length > 0 && <span
+                                                className="inline-flex items-center rounded-xl bg-red-50 absolute bottom-5 left-4 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                                                     {cartItems.length}
+                                                </span>}
 
                                                 <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
                                         </button>

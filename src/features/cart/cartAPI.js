@@ -17,3 +17,35 @@ export function addToCart(item){
 
     })
 }
+
+export function fetchCartItemsByUser(userID) {
+    return new Promise(async (resolve) => {
+            const response = await fetch(`http://localhost:8080/cart?user=${userID}`)
+            const data = response.json()
+            resolve({data})
+        }
+    );
+}
+
+export function updateCartItem(updated) {
+    return new Promise(async (resolve) => {
+            const response = await fetch(`http://localhost:8080/cart/${updated.id}`,{
+                method: 'PATCH',
+                body:JSON.stringify({quantity:updated.quantity})
+            })
+            const data = response.json()
+            resolve({data})
+        }
+    );
+}
+
+export function deleteCartItem(id) {
+    return new Promise(async (resolve) => {
+            const response = await fetch(`http://localhost:8080/cart/${id}`,{
+                method: 'DELETE',
+            })
+            const data = response.json()
+            resolve({data})
+        }
+    );
+}

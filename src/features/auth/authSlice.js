@@ -1,10 +1,11 @@
-import {createUser, checkUser} from "./components/authAPI";
+import {createUser, checkUser, addAddress} from "./components/authAPI";
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
     loggedInUser: null,
     status: 'idle',
-    error:null
+    error: null,
+    addresses:[],
 }
 export const createUserAsync = createAsyncThunk(
     "auth/createUser",
@@ -23,6 +24,15 @@ export const checkUserAsync = createAsyncThunk(
     }
 )
 
+export const addAddressAsync = createAsyncThunk(
+    "auth/addAddress",
+    async (address)=>{
+        console.log('address',address)
+        const response = await addAddress(address)
+        console.log('sdsd',response)
+        return response.data
+    }
+)
 export const authSlice = createSlice({
     name:'auth',
     initialState,

@@ -17,7 +17,6 @@ export function createUser(userData){
 
     })
 }
-
 export function checkUser(loginInfo){
     return new Promise(async (resolve,reject)=>{
         try{
@@ -38,6 +37,24 @@ export function checkUser(loginInfo){
         }
         catch (e) {
             reject({message: 'something went wrong'})
+        }
+    })
+}
+export function addAddress(address){
+    return new Promise(async (resolve)=>{
+        try{
+            const response =await fetch('http://localhost:8080/addresses',{
+                method: 'POST',
+                body: JSON.stringify(address),
+                headers:{
+                    'content-type': 'application/json'
+                }
+            })
+            const data = await response.json()
+            resolve({data})
+        }
+        catch (e) {
+            console.log('error',e)
         }
     })
 }
