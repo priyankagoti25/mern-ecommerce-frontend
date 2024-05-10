@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link} from "react-router-dom";
 import {deleteCartItemAsync, selectCartItems, updateCartItemAsync} from "../features/cart/cartSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
-import {checkUserAsync} from "../features/auth/authSlice";
+import {addAddressAsync, checkUserAsync, fetchAddressAsync, selectedAddresses} from "../features/auth/authSlice";
+import {createOrderAsync} from "../features/order/orderSlice";
+
 const products = [
     {
         id: 1,
@@ -40,49 +42,71 @@ const products = [
     },
     // More products...
 ]
-const addresses = [
-    {
-        id:1,
-        name: "Rohan Patel",
-        street: "31, Main Road",
-        city: "Delhi",
-        state: "Uttarpradesh",
-        country: "India",
-        pinCode: "500256",
-        email: "xyz@gmail.com",
-        phone: 123455030
-    },
-    {
-        id:2,
-        name: "Priyanka Patel",
-        street: "47, Bhaktinandan",
-        city: "Surat",
-        country: "India",
-        state: "Uttarpradesh",
-        pinCode: "395004",
-        email: "abc@gmail.com",
-        phone: 1232324030
-    }
-]
+// const addresses = [
+//     {
+//         id:1,
+//         name: "Rohan Patel",
+//         street: "31, Main Road",
+//         city: "Delhi",
+//         state: "Uttarpradesh",
+//         country: "India",
+//         pinCode: "500256",
+//         email: "xyz@gmail.com",
+//         phone: 123455030
+//     },
+//     {
+//         id:2,
+//         name: "Priyanka Patel",
+//         street: "47, Bhaktinandan",
+//         city: "Surat",
+//         country: "India",
+//         state: "Uttarpradesh",
+//         pinCode: "395004",
+//         email: "abc@gmail.com",
+//         phone: 1232324030
+//     }
+// ]
 
 function Checkout(props) {
     const dispatch = useDispatch()
+    const [selectedAddress, setSelectedAddress] = useState(null)
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('cash')
     const cartItems = useSelector(selectCartItems)
+    const addresses = useSelector(selectedAddresses)
     const totalAmount = cartItems.reduce((amount, item)=>item.price*item.quantity+amount,0)
     const totalItems = cartItems.reduce((total,item)=>item.quantity+total,0)
     const {register, reset, handleSubmit, watch, formState: {errors}} = useForm()
-
+    console.log('errors',errors,selectedAddress)
+    useEffect(()=>{
+        dispatch(fetchAddressAsync('06e8'))
+    },[dispatch])
     function handleQuantity(e,product){
         console.log('quantity',e.target.value)
         dispatch(updateCartItemAsync({...product,quantity:parseInt(e.target.value)}))
+    }
+    function handlePayments(e){
+        console.log('handlePayments',e.target.value)
+        setSelectedPaymentMethod(e.target.value)
+    }
+    function handleAddress(e){
+        console.log('handleAddress',e.target.value)
+        const address= addresses.find(add=>add.id===e.target.value)
+        setSelectedAddress(address)
+    }
+    function handleOrder(){
+        const order = {items:cartItems, totalAmount, totalItems, selectedPaymentMethod, selectedAddress}
+        dispatch(createOrderAsync(order))
+        console.log('order now')
     }
     return (
         <div className="flex mx-auto max-w-2xl lg:max-w-7xl h-full flex-col my-5 p-10">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10">
                 <div className="lg:col-span-3">
                     <div className="bg-white shadow-xl p-5">
-                        <form noValidate onSubmit={handleSubmit((data)=>{
+                        <form noValidate onSubmit={handleSubmit(async (data)=>{
                             console.log('address-data',data)
+                            await dispatch(addAddressAsync({...data, user:'06e8'}))
+                            reset()
                             // dispatch(checkUserAsync(data))
                         })}>
                             <div className="border-b border-gray-900/10 pb-12">
@@ -101,6 +125,7 @@ function Checkout(props) {
                                                 id="name"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.name?.message}</p>
                                         </div>
                                     </div>
 
@@ -115,6 +140,7 @@ function Checkout(props) {
                                                 type="email"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.email?.message}</p>
                                         </div>
                                     </div>
                                     <div className="sm:col-span-4">
@@ -128,6 +154,7 @@ function Checkout(props) {
                                                 type="number"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.phone?.message}</p>
                                         </div>
                                     </div>
 
@@ -160,6 +187,7 @@ function Checkout(props) {
                                                 id="street"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.street?.message}</p>
                                         </div>
                                     </div>
 
@@ -174,6 +202,7 @@ function Checkout(props) {
                                                 id="city"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.city?.message}</p>
                                         </div>
                                     </div>
 
@@ -188,6 +217,7 @@ function Checkout(props) {
                                                 id="state"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.state?.message}</p>
                                         </div>
                                     </div>
 
@@ -202,6 +232,7 @@ function Checkout(props) {
                                                 id="pinCode"
                                                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                             />
+                                            <p className="text-red-600">{errors.pinCode?.message}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -230,6 +261,8 @@ function Checkout(props) {
                                                     id="address"
                                                     name="addresses"
                                                     type="radio"
+                                                    value={address.id}
+                                                    onChange={(e)=>handleAddress(e)}
                                                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                                                 />
                                                 <div className="min-w-0 flex-auto -mt-1.5">
@@ -253,6 +286,10 @@ function Checkout(props) {
                                                 <input
                                                     id="cash_optiom"
                                                     name="payments"
+                                                    value='cash'
+                                                    onChange={(e)=>handlePayments(e)}
+                                                    checked={selectedPaymentMethod==='cash'}
+                                                    autoFocus={selectedPaymentMethod==='cash'}
                                                     type="radio"
                                                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                                                 />
@@ -264,6 +301,10 @@ function Checkout(props) {
                                                 <input
                                                     id="card_option"
                                                     name="payments"
+                                                    value='card'
+                                                    onChange={(e)=>handlePayments(e)}
+                                                    checked={selectedPaymentMethod==='card'}
+                                                    autoFocus={selectedPaymentMethod==='card'}
                                                     type="radio"
                                                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                                                 />
@@ -364,12 +405,12 @@ function Checkout(props) {
                             </div>
                             <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                             <div className="mt-6">
-                                <Link
-                                    to="/checkout"
+                                <div
+                                    onClick={handleOrder}
                                     className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
                                 >
-                                    Checkout
-                                </Link>
+                                    Order now
+                                </div>
                             </div>
                             <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
                                 <p>
@@ -391,8 +432,6 @@ function Checkout(props) {
 
             </div>
         </div>
-
-
     );
 }
 

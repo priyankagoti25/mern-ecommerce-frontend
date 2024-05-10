@@ -1,4 +1,4 @@
-import {createUser, checkUser, addAddress} from "./components/authAPI";
+import {createUser, checkUser, addAddress, fetchAddress} from "./components/authAPI";
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
@@ -23,7 +23,13 @@ export const checkUserAsync = createAsyncThunk(
         return response.data
     }
 )
-
+export const fetchAddressAsync = createAsyncThunk(
+    "auth/fetchAddress",
+    async (userID)=>{
+        const response = await fetchAddress(userID)
+        return response.data
+    }
+)
 export const addAddressAsync = createAsyncThunk(
     "auth/addAddress",
     async (address)=>{
@@ -58,13 +64,29 @@ export const authSlice = createSlice({
                 state.error = null
             })
             .addCase(checkUserAsync.rejected,(state, action)=>{
-                console.log('rejected', action)
                 state.status = "idle"
                 state.error = action.error
+            })
+            .addCase(fetchAddressAsync.pending,(state)=>{
+                state.status = 'loading'
+            })
+            .addCase(fetchAddressAsync.fulfilled,(state, action)=>{
+                state.status = "idle"
+                state.addresses = action.payload
+            })
+            .addCase(addAddressAsync.pending,(state, action)=>{
+                state.status = 'loading'
+                state.error = null
+            })
+            .addCase(addAddressAsync.fulfilled,(state, action)=>{
+                state.status = "idle"
+                state.addresses.push(action.payload)
+                state.error = null
             })
     }
 })
 
 export const selectedLoggedInUser = state=>state.auth.loggedInUser
+export const selectedAddresses = state=>state.auth.addresses
 export const loginError = state=>state.auth.error
 export default authSlice.reducer

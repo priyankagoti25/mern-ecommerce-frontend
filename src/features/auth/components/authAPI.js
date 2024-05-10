@@ -40,6 +40,15 @@ export function checkUser(loginInfo){
         }
     })
 }
+
+export function fetchAddress(userID){
+    return new Promise(async (resolve) => {
+            const response = await fetch(`http://localhost:8080/addresses?user=${userID}`)
+            const data = response.json()
+            resolve({data})
+        }
+    );
+}
 export function addAddress(address){
     return new Promise(async (resolve)=>{
         try{

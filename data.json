@@ -2475,26 +2475,6 @@
       "user": "06e8"
     },
     {
-      "id": "8778",
-      "title": "Samsung Galaxy Book",
-      "description": "Samsung Galaxy Book S (2020) Laptop With Intel Lakefield Chip, 8GB of RAM Launched",
-      "price": 1499,
-      "discountPercentage": 4.15,
-      "rating": 4.25,
-      "stock": 50,
-      "brand": "Samsung",
-      "category": "laptops",
-      "thumbnail": "https://cdn.dummyjson.com/product-images/7/thumbnail.jpg",
-      "images": [
-        "https://cdn.dummyjson.com/product-images/7/1.jpg",
-        "https://cdn.dummyjson.com/product-images/7/2.jpg",
-        "https://cdn.dummyjson.com/product-images/7/3.jpg",
-        "https://cdn.dummyjson.com/product-images/7/thumbnail.jpg"
-      ],
-      "quantity": 1,
-      "user": "06e8"
-    },
-    {
       "id": "463c",
       "title": "Samsung Galaxy Book",
       "description": "Samsung Galaxy Book S (2020) Laptop With Intel Lakefield Chip, 8GB of RAM Launched",
@@ -2515,5 +2495,31 @@
       "user": "06e8"
     }
   ],
-  "addresses": []
+  "addresses": [
+    {
+      "id": "bd89",
+      "name": "Roshesh Patel",
+      "email": "roshesh@gmail.com",
+      "phone": "9874561231",
+      "country": "India",
+      "street": "501, Sai Heights, Ved Road, Katargam",
+      "city": "Surat",
+      "state": "Gujarat",
+      "pinCode": "395006",
+      "user": "06e8"
+    },
+    {
+      "id": "a09e",
+      "name": "Yagni Roshan",
+      "email": "yagni@gmail.com",
+      "phone": "8745612391",
+      "country": "India",
+      "street": "21, Veer narmad street, main naka,",
+      "city": "New Delhi",
+      "state": "Utter Pradesh",
+      "pinCode": "125364",
+      "user": "06e8"
+    }
+  ],
+  "orders": []
 }
